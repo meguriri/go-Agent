@@ -92,7 +92,7 @@ func main() {
 	dir, _ := os.Getwd()
 	client := Client{
 		client:      c,
-		model:       "qwen3:8b",
+		model:       modelID,
 		ctx:         ctx,
 		System:      fmt.Sprintf("You are a coding agent at %s. Use bash to solve tasks. Act, don't explain.", dir),
 		tools:       nil,
@@ -111,7 +111,7 @@ func main() {
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
 		// fmt.Scan(&query)
-		query = "我的test目录下有一个hello.py，然后它是从小到大的排序，我想给他改成从大到小的排序"
+		query = "帮我在test目录中创建一个test.py，内容是print('hello world')，然后运行它，并把输出结果告诉我"
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break
