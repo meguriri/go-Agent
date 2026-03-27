@@ -10,7 +10,7 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
-type Client struct {
+type Agent struct {
 	client            *api.Client
 	model             string
 	ctx               context.Context
@@ -20,9 +20,9 @@ type Client struct {
 	rounds_since_todo int
 }
 
-func NewClient(client *api.Client, model string, ctx context.Context, system string,
-	toolHandler tool.ToolHandler) *Client {
-	c := &Client{
+func NewAgent(client *api.Client, model string, ctx context.Context, system string,
+	toolHandler tool.ToolHandler) *Agent {
+	c := &Agent{
 		client:            client,
 		model:             model,
 		ctx:               ctx,
@@ -37,7 +37,7 @@ func NewClient(client *api.Client, model string, ctx context.Context, system str
 	return c
 }
 
-func (c *Client) Chat() {
+func (c *Agent) Chat() {
 	history := make([]api.Message, 0)
 	history = append(history, api.Message{
 		Role:    "system",
@@ -62,7 +62,7 @@ func (c *Client) Chat() {
 	}
 }
 
-func (c *Client) AgentLoop(messages []api.Message) []api.Message {
+func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 	for true {
 		req := &api.ChatRequest{
 			Model:    c.model,

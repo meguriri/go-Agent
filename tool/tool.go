@@ -20,6 +20,7 @@ func NewToolHandler() ToolHandler {
 	t["write_file"] = tools.WriteTool{}
 	t["edit_file"] = tools.EditTool{}
 	t["todo"] = tools.TodoManager{}
+	t["task"] = tools.TaskTool{}
 	return t
 }
 

@@ -28,10 +28,10 @@ func main() {
 	ctx := context.Background()
 	dir, _ := os.Getwd()
 
-	client := model.NewClient(c, modelID, ctx,
+	agent := model.NewAgent(c, modelID, ctx,
 		fmt.Sprintf(`You are a coding agent at %s.You have to use the todo tool to plan multi-step tasks.
 		 Mark in_progress before starting, completed when done.Prefer tools over prose.`, dir),
 		tool.NewToolHandler(),
 	)
-	client.Chat()
+	agent.Chat()
 }
