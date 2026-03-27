@@ -25,7 +25,7 @@ func (e EditTool) GetTool() api.Tool {
 		Description: "edit to new_text",
 	})
 
-	readToolFunction := api.ToolFunction{
+	editToolFunction := api.ToolFunction{
 		Name:        "edit_file",
 		Description: "Replace exact text in file.",
 		Parameters: api.ToolFunctionParameters{
@@ -36,7 +36,7 @@ func (e EditTool) GetTool() api.Tool {
 	}
 	return api.Tool{
 		Type:     "function",
-		Function: readToolFunction,
+		Function: editToolFunction,
 	}
 }
 

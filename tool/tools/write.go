@@ -20,7 +20,7 @@ func (w WriteTool) GetTool() api.Tool {
 		Description: "writed content",
 	})
 
-	readToolFunction := api.ToolFunction{
+	writeToolFunction := api.ToolFunction{
 		Name:        "write_file",
 		Description: "write content to file.",
 		Parameters: api.ToolFunctionParameters{
@@ -31,7 +31,7 @@ func (w WriteTool) GetTool() api.Tool {
 	}
 	return api.Tool{
 		Type:     "function",
-		Function: readToolFunction,
+		Function: writeToolFunction,
 	}
 }
 

@@ -29,7 +29,8 @@ func main() {
 	dir, _ := os.Getwd()
 
 	client := model.NewClient(c, modelID, ctx,
-		fmt.Sprintf("You are a coding agent at %s. Use bash to solve tasks. Act, don't explain.", dir),
+		fmt.Sprintf(`You are a coding agent at %s.You have to use the todo tool to plan multi-step tasks.
+		 Mark in_progress before starting, completed when done.Prefer tools over prose.`, dir),
 		tool.NewToolHandler(),
 	)
 	client.Chat()

@@ -11,23 +11,25 @@ import (
 )
 
 type Client struct {
-	client      *api.Client
-	model       string
-	ctx         context.Context
-	System      string
-	tools       api.Tools
-	ToolHandler tool.ToolHandler
+	client            *api.Client
+	model             string
+	ctx               context.Context
+	System            string
+	tools             api.Tools
+	ToolHandler       tool.ToolHandler
+	rounds_since_todo int
 }
 
 func NewClient(client *api.Client, model string, ctx context.Context, system string,
 	toolHandler tool.ToolHandler) *Client {
 	c := &Client{
-		client:      client,
-		model:       model,
-		ctx:         ctx,
-		System:      system,
-		tools:       nil,
-		ToolHandler: toolHandler,
+		client:            client,
+		model:             model,
+		ctx:               ctx,
+		System:            system,
+		tools:             nil,
+		ToolHandler:       toolHandler,
+		rounds_since_todo: 0,
 	}
 	for _, v := range c.ToolHandler {
 		c.tools = append(c.tools, v.GetTool())
@@ -44,8 +46,8 @@ func (c *Client) Chat() {
 	var query string
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
-		// fmt.Scan(&query)
-		query = "帮我在sandbox目录中创建一个test.py，内容是print('hello world')，然后运行它，并把输出结果告诉我"
+		fmt.Scan(&query)
+		// query = "帮我在sandbox目录中创建一个test.py，内容是print('hello world')，然后运行它，并把输出结果告诉我"
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break
@@ -70,6 +72,8 @@ func (c *Client) AgentLoop(messages []api.Message) []api.Message {
 		var fullContent strings.Builder
 		var thinkingContent strings.Builder
 		var assistantMsg api.Message
+		use_todo := false
+
 		err := c.client.Chat(c.ctx, req, func(resp api.ChatResponse) error {
 			fullContent.WriteString(resp.Message.Content)
 			thinkingContent.WriteString(resp.Message.Thinking)
@@ -82,6 +86,7 @@ func (c *Client) AgentLoop(messages []api.Message) []api.Message {
 			log.Fatalf("get llm response error: %v\n", err)
 			return messages
 		}
+
 		assistantMsg.Role = "assistant"
 		assistantMsg.Thinking = thinkingContent.String()
 		assistantMsg.Content = fullContent.String()
@@ -99,15 +104,32 @@ func (c *Client) AgentLoop(messages []api.Message) []api.Message {
 			if !ok {
 				output = "Unknown tool: " + tc.Function.Name
 			} else {
+				if tc.Function.Name == "todo" {
+					use_todo = true
+				}
 				output = handler.Run(tc.Function.Arguments)
 			}
-
-			fmt.Printf("执行结果摘要: %s\n", strings.Split(output, "\n")[0])
+			if tc.Function.Name != "todo" {
+				fmt.Printf("执行结果摘要: %s\n", strings.Split(output, "\n")[0])
+			} else {
+				fmt.Printf("\033[32m 更新后的待办事项:\n%s \033[0m\n", output)
+			}
 			toolResultMsg := api.Message{
 				Role:    "tool",
 				Content: output,
 			}
 			messages = append(messages, toolResultMsg)
+		}
+		if use_todo {
+			c.rounds_since_todo = 0
+		} else {
+			c.rounds_since_todo++
+		}
+		if c.rounds_since_todo >= 3 {
+			messages = append(messages, api.Message{
+				Role:    "user",
+				Content: "<reminder>Update your todos.</reminder>",
+			})
 		}
 	}
 	return messages
