@@ -56,9 +56,6 @@ func (c *Client) agentLoop(messages []api.Message) []api.Message {
 		}
 		for _, tc := range assistantMsg.ToolCalls {
 			fmt.Printf("\033[33m$ 正在执行工具: %s\033[0m\n", tc.Function.Name)
-			// cmdRaw, _ := tc.Function.Arguments.Get("command")
-			// command := fmt.Sprintf("%v", cmdRaw)
-			// output := tool.RunBash(command)
 			var output string
 			handler, ok := c.ToolHandler[tc.Function.Name]
 			if !ok {
@@ -113,8 +110,8 @@ func main() {
 	var query string
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
-		fmt.Scan(&query)
-		// query = "帮我创建1个py文件输出hello"
+		// fmt.Scan(&query)
+		query = "我的test目录下有一个hello.py，然后它是从小到大的排序，我想给他改成从大到小的排序"
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break

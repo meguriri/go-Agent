@@ -1,4 +1,4 @@
-package tool
+package tools
 
 import (
 	"context"
@@ -11,9 +11,11 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
-type bashTool api.Tool
+type BashTool struct {
+	// command string
+}
 
-func (b bashTool) GetTool() api.Tool {
+func (b BashTool) GetTool() api.Tool {
 	props := api.NewToolPropertiesMap()
 	props.Set("command", api.ToolProperty{
 		Type:        api.PropertyType{"string"},
@@ -35,7 +37,9 @@ func (b bashTool) GetTool() api.Tool {
 	}
 }
 
-func (b *bashTool) Run(args api.ToolCallFunctionArguments) string {
+func (b BashTool) Run(args api.ToolCallFunctionArguments) string {
+	cmdRaw, _ := args.Get("command")
+	command := fmt.Sprintf("%v", cmdRaw)
 	dangerous := []string{
 		"rm -rf .", "sudo",
 		"shutdown", "reboot", "> /dev/",
