@@ -1,6 +1,8 @@
 package tools
 
 import (
+	"s01/skill"
+
 	"github.com/ollama/ollama/api"
 )
 
@@ -29,5 +31,8 @@ func (r LoadSkillTool) GetTool() api.Tool {
 }
 
 func (r LoadSkillTool) Run(args api.ToolCallFunctionArguments) string {
-	return ""
+	nameRaw, _ := args.Get("name")
+	name := nameRaw.(string)
+	skillsLoader := skill.NewSkillLoader("./skills")
+	return skillsLoader.GetContent(name)
 }
