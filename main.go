@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"s01/model"
-	"s01/tool"
+	"s01/tools"
 
 	"github.com/joho/godotenv"
 
@@ -29,9 +29,8 @@ func main() {
 	dir, _ := os.Getwd()
 
 	agent := model.NewAgent(c, modelID, ctx,
-		fmt.Sprintf(`You are a coding agent at %s.You have to use the todo tool to plan multi-step tasks.
-		 Mark in_progress before starting, completed when done.Prefer tools over prose.`, dir),
-		tool.NewToolHandler(),
+		fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用任务工具(工具名：task)来把任务委派给subagent。", dir),
+		tools.NewToolHandler(),
 	)
 	agent.Chat()
 }

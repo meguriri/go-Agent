@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"s01/tool"
+	"s01/tools"
 	"strings"
 
 	"github.com/ollama/ollama/api"
@@ -16,12 +16,12 @@ type Agent struct {
 	ctx               context.Context
 	System            string
 	tools             api.Tools
-	ToolHandler       tool.ToolHandler
+	ToolHandler       tools.ToolHandler
 	rounds_since_todo int
 }
 
 func NewAgent(client *api.Client, model string, ctx context.Context, system string,
-	toolHandler tool.ToolHandler) *Agent {
+	toolHandler tools.ToolHandler) *Agent {
 	c := &Agent{
 		client:            client,
 		model:             model,
@@ -46,8 +46,8 @@ func (c *Agent) Chat() {
 	var query string
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
-		fmt.Scan(&query)
-		// query = "帮我在sandbox目录中创建一个test.py，内容是print('hello world')，然后运行它，并把输出结果告诉我"
+		// fmt.Scan(&query)
+		query = "帮我在sandbox目录中创建一个test.py，内容是print('hello world')，然后运行它，并把输出结果告诉我"
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break
@@ -91,11 +91,11 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 		assistantMsg.Thinking = thinkingContent.String()
 		assistantMsg.Content = fullContent.String()
 		messages = append(messages, assistantMsg)
-		if len(assistantMsg.ToolCalls) == 0 {
-			return messages
-		}
 		if assistantMsg.Thinking != "" {
 			fmt.Printf("\033[90m正在思考：%s\033[0m\n", assistantMsg.Thinking)
+		}
+		if len(assistantMsg.ToolCalls) == 0 {
+			return messages
 		}
 		for _, tc := range assistantMsg.ToolCalls {
 			fmt.Printf("\033[33m$ 正在执行工具: %s\033[0m\n", tc.Function.Name)
