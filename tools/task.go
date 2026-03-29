@@ -128,11 +128,11 @@ func Run_subagent(prompt string, description string, ctx context.Context) string
 		if len(assistantMsg.ToolCalls) == 0 {
 			break
 		}
-		if assistantMsg.Thinking != "" {
-			fmt.Printf("\033[90m正在思考：%s\033[0m\n", assistantMsg.Thinking)
-		}
+		// if assistantMsg.Thinking != "" {
+		// 	fmt.Printf("\033[90m正在思考：%s\033[0m\n", assistantMsg.Thinking)
+		// }
 		for _, tc := range assistantMsg.ToolCalls {
-			fmt.Printf("\033[33m$ 正在执行工具: %s\033[0m\n", tc.Function.Name)
+			fmt.Printf("	\033[33m$ 正在执行工具: %s\033[0m\n", tc.Function.Name)
 			var output string
 			handler, ok := subAgent.ToolHandler[tc.Function.Name]
 			if !ok {
@@ -144,9 +144,9 @@ func Run_subagent(prompt string, description string, ctx context.Context) string
 				output = handler.Run(tc.Function.Arguments)
 			}
 			if tc.Function.Name != "todo" {
-				fmt.Printf("执行结果摘要: %s\n", strings.Split(output, "\n")[0])
+				fmt.Printf("	执行结果摘要: %s\n", strings.Split(output, "\n")[0])
 			} else {
-				fmt.Printf("\033[32m 更新后的待办事项:\n%s \033[0m\n", output)
+				fmt.Printf("	\033[32m 更新后的待办事项:\n%s \033[0m\n", output)
 			}
 			toolResultMsg := api.Message{
 				Role:    "tool",

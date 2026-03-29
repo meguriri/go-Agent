@@ -27,7 +27,10 @@ func main() {
 	}
 	ctx := context.Background()
 	dir, _ := os.Getwd()
-
+	/*
+		你是一名位于 {WORKDIR} 的编程代理。在处理不熟悉的主题之前，请使用 load_skill 来获取专业知识。
+		可用技能：{SKILL_LOADER.get_descriptions()}
+	*/
 	agent := model.NewAgent(c, modelID, ctx,
 		fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用任务工具(工具名：task)来把任务委派给subagent。", dir),
 		tools.NewToolHandler(),
