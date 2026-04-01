@@ -47,7 +47,7 @@ func (c *Agent) Chat() {
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
 		// fmt.Scan(&query)
-		query = "帮我在sandbox目录中创建一个test.py，内容是print('hello world')，然后运行它，并把输出结果告诉我"
+		query = "我需要对sandbox目录中的circle.h进行代码审查——请先加载相关技能。"
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break

@@ -78,11 +78,17 @@ func (s *SkillLoader) parseFrontmatter(text string) (meta, string) {
 	m := make(meta)
 
 	lines := strings.Split(frontmatter, "\n")
+	now := ""
 	for _, line := range lines {
 		if strings.Contains(line, ":") {
 			parts := strings.SplitN(line, ":", 2)
 			key := strings.TrimSpace(parts[0])
 			val := strings.TrimSpace(parts[1])
+			if key != "name" && key != "description" && key != "tags" {
+				m[now] += strings.TrimSpace(line)
+				continue
+			}
+			now = key
 			switch key {
 			case "tags":
 				m["tags"] = val
@@ -91,6 +97,8 @@ func (s *SkillLoader) parseFrontmatter(text string) (meta, string) {
 			case "description":
 				m["description"] = val
 			}
+		} else {
+			m[now] += strings.TrimSpace(line)
 		}
 	}
 	return m, body
