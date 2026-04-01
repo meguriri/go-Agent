@@ -17,14 +17,7 @@ func NewTaskManager(dir string) *TaskManager {
 	return t
 }
 
-func (t *TaskManager) Create(description string) int {
-	task := Task{}
-	t.save(task)
-	t.nextID++
-	return t.nextID
-}
-
-func (t *TaskManager) save(task Task) {
+func (t *TaskManager) max_id() int {
 
 }
 
@@ -32,7 +25,18 @@ func (t *TaskManager) load(id int) Task {
 	return Task{}
 }
 
-func (t *TaskManager) ClearDependency(id int) {
+func (t *TaskManager) save(task Task) {
+
+}
+
+func (t *TaskManager) Create(description string) int {
+	task := Task{}
+	t.save(task)
+	t.nextID++
+	return t.nextID
+}
+
+func (t *TaskManager) Get(taskID int) string {
 
 }
 
@@ -41,7 +45,15 @@ func (t *TaskManager) Update(id int, status string, addBlockBy int, addBlock int
 	if status != "" {
 		task.status = status
 		if task.status == "complete" {
-			t.ClearDependency(id)
+			t.clearDependency(id)
 		}
 	}
+}
+
+func (t *TaskManager) clearDependency(id int) {
+
+}
+
+func (t *TaskManager) listAll() string {
+
 }

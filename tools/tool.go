@@ -20,7 +20,11 @@ func NewToolHandler() ToolHandler {
 	// t["todo"] = TodoManager{}
 	// t["task"] = TaskTool{}
 	// t["load_skill"] = LoadSkillTool{}
-	t["compact"] = CompactTool{}
+	// t["compact"] = CompactTool{}
+	t["task_create"] = nil
+	t["task_update"] = nil
+	t["task_list"] = nil
+	t["task_get"] = nil
 	return t
 }
 

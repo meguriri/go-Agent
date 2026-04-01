@@ -96,6 +96,7 @@ func (t TodoManager) GetTool() api.Tool {
 	itemProps.Set("status", api.ToolProperty{
 		Type:        api.PropertyType{"string"},
 		Description: "Task status, one of 'pending', 'in_progress', 'completed'",
+		Enum:        []interface{}{"pending", "in_progress", "completed"},
 	})
 	todoItemSchema := api.ToolFunctionParameters{
 		Type:       "object",
