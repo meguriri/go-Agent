@@ -14,12 +14,13 @@ type ToolHandler map[string]tool
 func NewToolHandler() ToolHandler {
 	t := make(ToolHandler)
 	t["bash"] = BashTool{}
-	// t["read_file"] = ReadTool{}
-	// t["write_file"] = WriteTool{}
-	// t["edit_file"] = EditTool{}
+	t["read_file"] = ReadTool{}
+	t["write_file"] = WriteTool{}
+	t["edit_file"] = EditTool{}
 	// t["todo"] = TodoManager{}
 	// t["task"] = TaskTool{}
-	t["load_skill"] = LoadSkillTool{}
+	// t["load_skill"] = LoadSkillTool{}
+	t["compact"] = CompactTool{}
 	return t
 }
 
@@ -29,7 +30,10 @@ func NewSubToolHandler() ToolHandler {
 	t["read_file"] = ReadTool{}
 	t["write_file"] = WriteTool{}
 	t["edit_file"] = EditTool{}
-	t["todo"] = TodoManager{}
+	// t["todo"] = TodoManager{}
+	// t["task"] = TaskTool{}
+	// t["load_skill"] = LoadSkillTool{}
+	// t["compact"] = CompactTool{}
 	return t
 }
 

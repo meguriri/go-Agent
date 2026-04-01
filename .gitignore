@@ -35,3 +35,4 @@ go.sum
 .vscode/
 
 .DS_Store
+.transcripts

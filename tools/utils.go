@@ -18,11 +18,19 @@ func safePath(p string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("abs cwd failed: %w", err)
 	}
+	workdir = filepath.Clean(workdir)
 
-	target, err := filepath.Abs(filepath.Join(workdir, p))
+	var target string
+	if filepath.IsAbs(p) {
+		target = p
+	} else {
+		target = filepath.Join(workdir, p)
+	}
+	target, err = filepath.Abs(target)
 	if err != nil {
 		return "", fmt.Errorf("resolve path failed: %w", err)
 	}
+	target = filepath.Clean(target)
 	rel, err := filepath.Rel(workdir, target)
 	if err != nil {
 		return "", fmt.Errorf("rel path failed: %w", err)

@@ -10,6 +10,13 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
+const (
+	THRESHOLD      = 50000
+	TRANSCRIPT_DIR = ".transcripts"
+	TASKS_DIR      = ".tasks"
+	KEEP_RECENT    = 3
+)
+
 type Agent struct {
 	client            *api.Client
 	model             string
@@ -44,10 +51,19 @@ func (c *Agent) Chat() {
 		Content: c.System,
 	})
 	var query string
+	i := 1
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
 		// fmt.Scan(&query)
-		query = "我需要对sandbox目录中的circle.h进行代码审查——请先加载相关技能。"
+		if i == 1 {
+			query = "逐个读取 sandbox 目录下的所有 cpp或 h 文件，分析它们的功能（不要修改文件，只分析功能）"
+		} else if i == 2 {
+			query = "持续读取sandbox的文件，直到压缩自动触发。"
+		} else if i == 3 {
+			query = "使用压缩工具（compact tool ）手动压缩对话"
+		} else {
+			break
+		}
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break
@@ -59,11 +75,18 @@ func (c *Agent) Chat() {
 		history = c.AgentLoop(history)
 		responses_content := history[len(history)-1].Content
 		fmt.Println(responses_content)
+		i++
 	}
 }
 
 func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 	for true {
+		messages = MicroCompact(messages)
+		if EstimateTokens(messages) > THRESHOLD {
+			fmt.Println("[auto_compact triggered]")
+			messages = AutoCompact(c, messages)
+		}
+
 		req := &api.ChatRequest{
 			Model:    c.model,
 			Messages: messages,
@@ -73,6 +96,7 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 		var thinkingContent strings.Builder
 		var assistantMsg api.Message
 		use_todo := false
+		manual_compact := false
 
 		err := c.client.Chat(c.ctx, req, func(resp api.ChatResponse) error {
 			fullContent.WriteString(resp.Message.Content)
@@ -106,8 +130,14 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 			} else {
 				if tc.Function.Name == "todo" {
 					use_todo = true
+					output = handler.Run(tc.Function.Arguments)
+				} else if tc.Function.Name == "compact" {
+					manual_compact = true
+					output = "Compressing..."
+					continue
+				} else {
+					output = handler.Run(tc.Function.Arguments)
 				}
-				output = handler.Run(tc.Function.Arguments)
 			}
 			if tc.Function.Name != "todo" {
 				fmt.Printf("执行结果摘要: %s\n", strings.Split(output, "\n")[0])
@@ -115,8 +145,9 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 				fmt.Printf("\033[32m 更新后的待办事项:\n%s \033[0m\n", output)
 			}
 			toolResultMsg := api.Message{
-				Role:    "tool",
-				Content: output,
+				Role:      "tool",
+				Content:   output,
+				ToolCalls: []api.ToolCall{tc},
 			}
 			messages = append(messages, toolResultMsg)
 		}
@@ -125,12 +156,16 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 		} else {
 			c.rounds_since_todo++
 		}
-		if c.rounds_since_todo >= 3 {
-			messages = append(messages, api.Message{
-				Role:    "user",
-				Content: "<reminder>Update your todos.</reminder>",
-			})
+		if manual_compact {
+			fmt.Println("[manual compact]")
+			messages = AutoCompact(c, messages)
 		}
+		// if c.rounds_since_todo >= 3 {
+		// 	messages = append(messages, api.Message{
+		// 		Role:    "user",
+		// 		Content: "<reminder>Update your todos.</reminder>",
+		// 	})
+		// }
 	}
 	return messages
 }
