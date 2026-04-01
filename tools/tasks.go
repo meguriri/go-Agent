@@ -1,10 +1,15 @@
 package tools
 
 import (
+	"s01/task"
+
 	"github.com/ollama/ollama/api"
 )
 
-type TasksCreateTool struct{}
+var taskManager = task.NewTaskManager(".tasks")
+
+type TasksCreateTool struct {
+}
 
 func (t TasksCreateTool) GetTool() api.Tool {
 	props := api.NewToolPropertiesMap()
@@ -33,7 +38,14 @@ func (t TasksCreateTool) GetTool() api.Tool {
 }
 
 func (t TasksCreateTool) Run(args api.ToolCallFunctionArguments) string {
-	return ""
+	subjectRaw, _ := args.Get("subject")
+	subject := subjectRaw.(string)
+	descriptionRaw, ok := args.Get("description")
+	description := ""
+	if ok {
+		description = descriptionRaw.(string)
+	}
+	return taskManager.Create(subject, description)
 }
 
 type TasksUpdateTool struct{}
@@ -80,7 +92,110 @@ func (t TasksUpdateTool) GetTool() api.Tool {
 }
 
 func (t TasksUpdateTool) Run(args api.ToolCallFunctionArguments) string {
-	return ""
+	taskIdRaw, ok := args.Get("task_id")
+	var taskId int
+	if ok {
+		switch v := taskIdRaw.(type) {
+		case int:
+			taskId = v
+		case int8:
+			taskId = int(v)
+		case int16:
+			taskId = int(v)
+		case int32:
+			taskId = int(v)
+		case int64:
+			taskId = int(v)
+		case uint:
+			taskId = int(v)
+		case uint8:
+			taskId = int(v)
+		case uint16:
+			taskId = int(v)
+		case uint32:
+			taskId = int(v)
+		case uint64:
+			taskId = int(v)
+		case float32:
+			taskId = int(v)
+		case float64:
+			taskId = int(v)
+		}
+	}
+	statusRaw, ok := args.Get("status")
+	var status string
+	if ok {
+		status = statusRaw.(string)
+	}
+	addBlockByRaw, ok := args.Get("addBlockedBy")
+	var addBlockBy []int = nil
+	if ok {
+		addBlockByInterface := addBlockByRaw.([]interface{})
+		addBlockBy = make([]int, len(addBlockByInterface))
+		for i, v := range addBlockByInterface {
+			switch val := v.(type) {
+			case int:
+				addBlockBy[i] = val
+			case int8:
+				addBlockBy[i] = int(val)
+			case int16:
+				addBlockBy[i] = int(val)
+			case int32:
+				addBlockBy[i] = int(val)
+			case int64:
+				addBlockBy[i] = int(val)
+			case uint:
+				addBlockBy[i] = int(val)
+			case uint8:
+				addBlockBy[i] = int(val)
+			case uint16:
+				addBlockBy[i] = int(val)
+			case uint32:
+				addBlockBy[i] = int(val)
+			case uint64:
+				addBlockBy[i] = int(val)
+			case float32:
+				addBlockBy[i] = int(val)
+			case float64:
+				addBlockBy[i] = int(val)
+			}
+		}
+	}
+	addBlocksRaw, ok := args.Get("addBlocks")
+	var addBlocks []int = nil
+	if ok {
+		addBlocksInterface := addBlocksRaw.([]interface{})
+		addBlocks = make([]int, len(addBlocksInterface))
+		for i, v := range addBlocksInterface {
+			switch val := v.(type) {
+			case int:
+				addBlocks[i] = val
+			case int8:
+				addBlocks[i] = int(val)
+			case int16:
+				addBlocks[i] = int(val)
+			case int32:
+				addBlocks[i] = int(val)
+			case int64:
+				addBlocks[i] = int(val)
+			case uint:
+				addBlocks[i] = int(val)
+			case uint8:
+				addBlocks[i] = int(val)
+			case uint16:
+				addBlocks[i] = int(val)
+			case uint32:
+				addBlocks[i] = int(val)
+			case uint64:
+				addBlocks[i] = int(val)
+			case float32:
+				addBlocks[i] = int(val)
+			case float64:
+				addBlocks[i] = int(val)
+			}
+		}
+	}
+	return taskManager.Update(taskId, status, addBlockBy, addBlocks)
 }
 
 type TasksListTool struct{}
@@ -103,7 +218,7 @@ func (t TasksListTool) GetTool() api.Tool {
 }
 
 func (t TasksListTool) Run(args api.ToolCallFunctionArguments) string {
-	return ""
+	return taskManager.ListAll()
 }
 
 type TasksGetTool struct{}
@@ -131,5 +246,35 @@ func (t TasksGetTool) GetTool() api.Tool {
 }
 
 func (t TasksGetTool) Run(args api.ToolCallFunctionArguments) string {
-	return ""
+	taskIdRaw, ok := args.Get("task_id")
+	var taskId int
+	if ok {
+		switch v := taskIdRaw.(type) {
+		case int:
+			taskId = v
+		case int8:
+			taskId = int(v)
+		case int16:
+			taskId = int(v)
+		case int32:
+			taskId = int(v)
+		case int64:
+			taskId = int(v)
+		case uint:
+			taskId = int(v)
+		case uint8:
+			taskId = int(v)
+		case uint16:
+			taskId = int(v)
+		case uint32:
+			taskId = int(v)
+		case uint64:
+			taskId = int(v)
+		case float32:
+			taskId = int(v)
+		case float64:
+			taskId = int(v)
+		}
+	}
+	return taskManager.Get(taskId)
 }
