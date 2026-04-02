@@ -12,6 +12,11 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
+const (
+	TRANSCRIPT_DIR = ".transcripts"
+	KEEP_RECENT    = 3
+)
+
 func EstimateTokens(messages []api.Message) int {
 	//Rough token count: ~4 chars per token.
 	tokens := 0

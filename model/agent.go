@@ -4,35 +4,38 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"s01/background"
 	"s01/tools"
 	"strings"
 
 	"github.com/ollama/ollama/api"
 )
 
-const (
-	THRESHOLD      = 50000
-	TRANSCRIPT_DIR = ".transcripts"
-	TASKS_DIR      = ".tasks"
-	KEEP_RECENT    = 3
-)
+// const (
+// 	THRESHOLD      = 50000
+// 	TRANSCRIPT_DIR = ".transcripts"
+// 	TASKS_DIR      = ".tasks"
+// 	KEEP_RECENT    = 3
+// )
 
 type Agent struct {
 	client            *api.Client
 	model             string
 	ctx               context.Context
+	threshold         int
 	System            string
 	tools             api.Tools
 	ToolHandler       tools.ToolHandler
 	rounds_since_todo int
 }
 
-func NewAgent(client *api.Client, model string, ctx context.Context, system string,
+func NewAgent(client *api.Client, model string, ctx context.Context, threshold int, system string,
 	toolHandler tools.ToolHandler) *Agent {
 	c := &Agent{
 		client:            client,
 		model:             model,
 		ctx:               ctx,
+		threshold:         threshold,
 		System:            system,
 		tools:             nil,
 		ToolHandler:       toolHandler,
@@ -87,9 +90,26 @@ func (c *Agent) Chat() {
 func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 	for true {
 		messages = MicroCompact(messages)
-		if EstimateTokens(messages) > THRESHOLD {
+		if EstimateTokens(messages) > c.threshold {
 			fmt.Println("[auto_compact triggered]")
 			messages = AutoCompact(c, messages)
+		}
+
+		notifs := background.MyBackgroundManager.DrainNotifications()
+		if notifs != nil && len(messages) != 0 {
+			lines := make([]string, 0)
+			for _, n := range notifs {
+				lines = append(lines, fmt.Sprintf("[bg:%s] %s: %s", n.ID, n.Status, n.Result))
+			}
+			notifText := strings.Join(lines, "\n")
+			messages = append(messages, api.Message{
+				Role:    "user",
+				Content: fmt.Sprintf("<background-results>\n%s\n</background-results>", notifText),
+			})
+			messages = append(messages, api.Message{
+				Role:    "assistant",
+				Content: "Noted background results.",
+			})
 		}
 
 		req := &api.ChatRequest{

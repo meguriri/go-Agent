@@ -17,6 +17,8 @@ func NewToolHandler() ToolHandler {
 	t["read_file"] = ReadTool{}
 	t["write_file"] = WriteTool{}
 	t["edit_file"] = EditTool{}
+	t["background_run"] = BackgroundTool{}
+	t["check_background"] = CheckBackgroundTool{}
 	// t["todo"] = TodoManager{}
 	// t["task"] = TaskTool{}
 	// t["load_skill"] = LoadSkillTool{}
