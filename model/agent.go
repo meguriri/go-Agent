@@ -1,9 +1,11 @@
 package model
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"s01/background"
 	"s01/tools"
 	"strings"
@@ -53,21 +55,24 @@ func (c *Agent) Chat() {
 		Role:    "system",
 		Content: c.System,
 	})
-	var query string
 	i := 1
 	for true {
-		// fmt.Print("\033[36ms01 >> \033[0m")
-		// fmt.Scan(&query)
-		if i == 1 {
-			query = "在后台运行 `sleep 5 && echo done`，然后在其运行期间创建一个文件。"
-		} else if i == 2 {
-			query = "启动 3 个后台任务：“sleep 2”、“sleep 4”、“sleep 6”。检查它们的状态。"
-		} else if i == 3 {
-			query = "在后台运行一个在sandbox目录下运行test.py,同时继续接受我的其他任务"
-		} else {
-			query = "exit"
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("\033[36ms01 >> \033[0m")
+		query, err := reader.ReadString('\n')
+		if err != nil {
+			return
 		}
-		fmt.Printf("\033[36ms01 >>%s \033[0m\n", query)
+		// if i == 1 {
+		// 	query = "在后台运行 `sleep 5 && echo done`，然后在其运行期间创建一个文件。"
+		// } else if i == 2 {
+		// 	query = "启动 3 个后台任务：“sleep 2”、“sleep 4”、“sleep 6”。检查它们的状态。"
+		// } else if i == 3 {
+		// 	query = "在后台运行一个在sandbox目录下运行test.py,同时继续接受我的其他任务"
+		// } else {
+		// 	query = "exit"
+		// }
+		// fmt.Printf("\033[36ms01 >>%s \033[0m\n", query)
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break

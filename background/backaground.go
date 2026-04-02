@@ -81,6 +81,7 @@ func (b *BackgroundManager) execute(taskID string, command string) {
 
 	select {
 	case b.notifCh <- task:
+		fmt.Println("task is complete", *task)
 	default: // 如果管道满了，防止阻塞后台协程
 	}
 }
@@ -103,7 +104,11 @@ func (b *BackgroundManager) Check(taskID string) string {
 	}
 	lines := make([]string, 0)
 	for tid, task := range b.Tasks {
-		lines = append(lines, fmt.Sprintf("%s: [%s] %s", tid, task.Status))
+		var command string = task.Command
+		if len(command) > 60 {
+			command = command[:60]
+		}
+		lines = append(lines, fmt.Sprintf("%s: [%s] %s", tid, task.Status, command))
 	}
 	if len(lines) == 0 {
 		return "No background tasks."
@@ -117,6 +122,7 @@ func (b *BackgroundManager) DrainNotifications() []*Task {
 	for {
 		select {
 		case t := <-b.notifCh:
+			fmt.Println("task is complete send signal", t.ID)
 			results = append(results, t)
 		default:
 			// 管道空了，立即返回已收集到的结果
