@@ -12,13 +12,13 @@ import (
 )
 
 type Task struct {
-	id          int
-	subject     string
-	description string
-	status      string
-	blockedBy   []int
-	blocks      []int
-	owner       string
+	ID          int    `json:"id"`
+	Subject     string `json:"subject"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+	BlockedBy   []int  `json:"blockedBy"`
+	Blocks      []int  `json:"blocks"`
+	Owner       string `json:"owner"`
 }
 
 type TaskManager struct {
@@ -26,17 +26,19 @@ type TaskManager struct {
 	nextID  int
 }
 
+var MyTaskManager *TaskManager = nil
+
 func NewTaskManager(dir string) *TaskManager {
 	os.MkdirAll(dir, 0755)
 	t := &TaskManager{
 		taskDir: dir,
 		nextID:  1,
 	}
-	t.nextID = t.max_id() + 1
+	t.nextID = t.max_ID() + 1
 	return t
 }
 
-func (t *TaskManager) max_id() int {
+func (t *TaskManager) max_ID() int {
 	maxID := 0
 	matches, err := filepath.Glob(filepath.Join(t.taskDir, "task_*.json"))
 	if err != nil {
@@ -49,19 +51,19 @@ func (t *TaskManager) max_id() int {
 		if len(parts) != 2 {
 			continue
 		}
-		id, err := strconv.Atoi(parts[1])
+		ID, err := strconv.Atoi(parts[1])
 		if err != nil {
 			continue
 		}
-		if id > maxID {
-			maxID = id
+		if ID > maxID {
+			maxID = ID
 		}
 	}
 	return maxID
 }
 
-func (t *TaskManager) load(id int) Task {
-	path := filepath.Join(t.taskDir, "task_"+strconv.Itoa(id)+".json")
+func (t *TaskManager) load(ID int) Task {
+	path := filepath.Join(t.taskDir, "task_"+strconv.Itoa(ID)+".json")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatalln("read file error: " + err.Error())
@@ -77,7 +79,7 @@ func (t *TaskManager) load(id int) Task {
 }
 
 func (t *TaskManager) save(task Task) {
-	path := filepath.Join(t.taskDir, "task_"+strconv.Itoa(task.id)+".json")
+	path := filepath.Join(t.taskDir, "task_"+strconv.Itoa(task.ID)+".json")
 	data, err := json.Marshal(task)
 	if err != nil {
 		log.Fatalln("json marshal error: " + err.Error())
@@ -88,15 +90,15 @@ func (t *TaskManager) save(task Task) {
 	}
 }
 
-func (t *TaskManager) Create(subject string, description string) string {
+func (t *TaskManager) Create(Subject string, Description string) string {
 	task := Task{
-		id:          t.nextID,
-		subject:     subject,
-		description: description,
-		status:      "pending",
-		blockedBy:   make([]int, 0),
-		blocks:      make([]int, 0),
-		owner:       "",
+		ID:          t.nextID,
+		Subject:     Subject,
+		Description: Description,
+		Status:      "pending",
+		BlockedBy:   make([]int, 0),
+		Blocks:      make([]int, 0),
+		Owner:       "",
 	}
 	t.save(task)
 	t.nextID++
@@ -116,33 +118,33 @@ func (t *TaskManager) Get(taskID int) string {
 	return string(data)
 }
 
-func (t *TaskManager) Update(id int, status string, addBlockBy []int, addBlock []int) string {
-	task := t.load(id)
-	if status != "" {
-		if status != "pending" && status != "in_progress" && status != "completed" {
-			log.Fatalf("Item %d: invalid status '%s'", id, status)
+func (t *TaskManager) Update(ID int, Status string, addBlockBy []int, addBlock []int) string {
+	task := t.load(ID)
+	if Status != "" {
+		if Status != "pending" && Status != "in_progress" && Status != "completed" {
+			log.Fatalf("Item %d: invalID Status '%s'", ID, Status)
 		}
-		task.status = status
-		if task.status == "completed" {
-			t.clearDependency(id)
+		task.Status = Status
+		if task.Status == "completed" {
+			t.clearDependency(ID)
 		}
 	}
 	if addBlockBy != nil || len(addBlockBy) != 0 {
-		task.blockedBy = append(task.blockedBy, addBlockBy...)
+		task.BlockedBy = append(task.BlockedBy, addBlockBy...)
 	}
 	if addBlock != nil || len(addBlock) != 0 {
-		task.blocks = append(task.blocks, addBlock...)
+		task.Blocks = append(task.Blocks, addBlock...)
 		for _, blockId := range addBlock {
 			blocked := t.load(blockId)
 			find := false
-			for _, id := range blocked.blockedBy {
-				if id == task.id {
+			for _, ID := range blocked.BlockedBy {
+				if ID == task.ID {
 					find = true
 					break
 				}
 			}
 			if !find {
-				blocked.blockedBy = append(blocked.blockedBy, id)
+				blocked.BlockedBy = append(blocked.BlockedBy, ID)
 				t.save(blocked)
 			}
 		}
@@ -155,8 +157,8 @@ func (t *TaskManager) Update(id int, status string, addBlockBy []int, addBlock [
 	return string(data)
 }
 
-func (t *TaskManager) clearDependency(completed_id int) {
-	// Remove completed_id from all other tasks' blockedBy lists.
+func (t *TaskManager) clearDependency(completed_ID int) {
+	// Remove completed_ID from all other tasks' BlockedBy lists.
 	matches, err := filepath.Glob(filepath.Join(t.taskDir, "task_*.json"))
 	if err != nil {
 		log.Fatalln("filepath glob error: " + err.Error())
@@ -171,9 +173,9 @@ func (t *TaskManager) clearDependency(completed_id int) {
 		if err != nil {
 			log.Fatalln("json unmarshal error: " + err.Error())
 		}
-		for i, id := range task.blockedBy {
-			if id == completed_id {
-				task.blockedBy = append(task.blockedBy[:i], task.blockedBy[i+1:]...)
+		for i, ID := range task.BlockedBy {
+			if ID == completed_ID {
+				task.BlockedBy = append(task.BlockedBy[:i], task.BlockedBy[i+1:]...)
 				t.save(task)
 				break
 			}
@@ -209,7 +211,7 @@ func (t *TaskManager) ListAll() string {
 	}
 	for _, task := range tasks {
 		var marker string
-		switch task.status {
+		switch task.Status {
 		case "pending":
 			marker = "[ ]"
 		case "in_progress":
@@ -220,10 +222,10 @@ func (t *TaskManager) ListAll() string {
 			marker = "[?]"
 		}
 		var blocked string = ""
-		if len(task.blockedBy) != 0 {
-			blocked = fmt.Sprintf(" (blocked by: %v)", task.blockedBy)
+		if len(task.BlockedBy) != 0 {
+			blocked = fmt.Sprintf(" (blocked by: %v)", task.BlockedBy)
 		}
-		lines = append(lines, fmt.Sprintf("%s #%d: %s%s", marker, task.id, task.subject, blocked))
+		lines = append(lines, fmt.Sprintf("%s #%d: %s%s", marker, task.ID, task.Subject, blocked))
 	}
 	return strings.Join(lines, "\n")
 }

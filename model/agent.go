@@ -53,17 +53,22 @@ func (c *Agent) Chat() {
 	var query string
 	i := 1
 	for true {
-		fmt.Print("\033[36ms01 >> \033[0m")
+		// fmt.Print("\033[36ms01 >> \033[0m")
 		// fmt.Scan(&query)
 		if i == 1 {
-			query = "逐个读取 sandbox 目录下的所有 cpp或 h 文件，分析它们的功能（不要修改文件，只分析功能）"
+			query = "我要在sandbox目录下完成一个计算器项目，创建 3 个任务：“设置项目”、“编写代码”和“编写测试”，并按顺序设置它们之间的依赖关系"
 		} else if i == 2 {
-			query = "持续读取sandbox的文件，直到压缩自动触发。"
+			query = "列出所有任务并显示依赖图"
 		} else if i == 3 {
-			query = "使用压缩工具（compact tool ）手动压缩对话"
+			query = "执行任务1的需求（注意要真正执行这个任务，比如用bash tool创建文件，用write_file tool去写文件），真正执行完这个任务内容，才去更新任务状态），完成任务1，然后列出任务，以确认任务 2 已解除阻塞。"
+		} else if i == 4 {
+			query = "执行任务2的需求（注意要真正执行这个任务，比如用bash tool创建文件，用write_file tool去写文件），完成任务2，然后列出任务，以确认任务 2 已解除阻塞。"
+		} else if i == 5 {
+			query = "执行任务3的需求（注意要真正执行这个任务，比如用bash tool创建文件，用write_file tool去写文件），完成任务3，然后列出任务，以确认任务 2 已解除阻塞。"
 		} else {
-			break
+			query = "exit"
 		}
+		fmt.Printf("\033[36ms01 >>%s \033[0m\n", query)
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break

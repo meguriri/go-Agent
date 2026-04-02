@@ -21,10 +21,10 @@ func NewToolHandler() ToolHandler {
 	// t["task"] = TaskTool{}
 	// t["load_skill"] = LoadSkillTool{}
 	// t["compact"] = CompactTool{}
-	t["task_create"] = nil
-	t["task_update"] = nil
-	t["task_list"] = nil
-	t["task_get"] = nil
+	t["task_create"] = TasksCreateTool{}
+	t["task_update"] = TasksUpdateTool{}
+	t["task_list"] = TasksListTool{}
+	t["task_get"] = TasksGetTool{}
 	return t
 }
 

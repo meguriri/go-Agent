@@ -6,7 +6,7 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
-var taskManager = task.NewTaskManager(".tasks")
+// var taskManager = task.NewTaskManager(".tasks")
 
 type TasksCreateTool struct {
 }
@@ -45,7 +45,7 @@ func (t TasksCreateTool) Run(args api.ToolCallFunctionArguments) string {
 	if ok {
 		description = descriptionRaw.(string)
 	}
-	return taskManager.Create(subject, description)
+	return task.MyTaskManager.Create(subject, description)
 }
 
 type TasksUpdateTool struct{}
@@ -63,14 +63,14 @@ func (t TasksUpdateTool) GetTool() api.Tool {
 	})
 	props.Set("addBlockedBy", api.ToolProperty{
 		Type:        api.PropertyType{"array"},
-		Description: "",
+		Description: "前置依赖任务id的列表",
 		Items: &api.ToolProperty{
 			Type: api.PropertyType{"integer"},
 		},
 	})
 	props.Set("addBlocks", api.ToolProperty{
 		Type:        api.PropertyType{"array"},
-		Description: "",
+		Description: "后置任务id的列表",
 		Items: &api.ToolProperty{
 			Type: api.PropertyType{"integer"},
 		},
@@ -195,7 +195,7 @@ func (t TasksUpdateTool) Run(args api.ToolCallFunctionArguments) string {
 			}
 		}
 	}
-	return taskManager.Update(taskId, status, addBlockBy, addBlocks)
+	return task.MyTaskManager.Update(taskId, status, addBlockBy, addBlocks)
 }
 
 type TasksListTool struct{}
@@ -218,7 +218,7 @@ func (t TasksListTool) GetTool() api.Tool {
 }
 
 func (t TasksListTool) Run(args api.ToolCallFunctionArguments) string {
-	return taskManager.ListAll()
+	return task.MyTaskManager.ListAll()
 }
 
 type TasksGetTool struct{}
@@ -276,5 +276,5 @@ func (t TasksGetTool) Run(args api.ToolCallFunctionArguments) string {
 			taskId = int(v)
 		}
 	}
-	return taskManager.Get(taskId)
+	return task.MyTaskManager.Get(taskId)
 }
