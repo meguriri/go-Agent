@@ -59,15 +59,11 @@ func (c *Agent) Chat() {
 		// fmt.Print("\033[36ms01 >> \033[0m")
 		// fmt.Scan(&query)
 		if i == 1 {
-			query = "我要在sandbox目录下完成一个计算器项目，创建 3 个任务：“设置项目”、“编写代码”和“编写测试”，并按顺序设置它们之间的依赖关系"
+			query = "在后台运行 `sleep 5 && echo done`，然后在其运行期间创建一个文件。"
 		} else if i == 2 {
-			query = "列出所有任务并显示依赖图"
+			query = "启动 3 个后台任务：“sleep 2”、“sleep 4”、“sleep 6”。检查它们的状态。"
 		} else if i == 3 {
-			query = "执行任务1的需求（注意要真正执行这个任务，比如用bash tool创建文件，用write_file tool去写文件），真正执行完这个任务内容，才去更新任务状态），完成任务1，然后列出任务，以确认任务 2 已解除阻塞。"
-		} else if i == 4 {
-			query = "执行任务2的需求（注意要真正执行这个任务，比如用bash tool创建文件，用write_file tool去写文件），完成任务2，然后列出任务，以确认任务 2 已解除阻塞。"
-		} else if i == 5 {
-			query = "执行任务3的需求（注意要真正执行这个任务，比如用bash tool创建文件，用write_file tool去写文件），完成任务3，然后列出任务，以确认任务 2 已解除阻塞。"
+			query = "在后台运行一个在sandbox目录下运行test.py,同时继续接受我的其他任务"
 		} else {
 			query = "exit"
 		}

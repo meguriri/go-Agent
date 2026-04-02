@@ -46,15 +46,17 @@ func (b *BackgroundManager) Run(command string) string {
 	b.mu.Unlock()
 
 	go b.execute(taskID, command)
-
-	return fmt.Sprintf("Background task {task_id} started: %s", command[:80])
+	if len(command) > 80 {
+		command = command[:80]
+	}
+	return fmt.Sprintf("Background task {task_id} started: %s", command)
 }
 
 func (b *BackgroundManager) execute(taskID string, command string) {
 	// Thread target: run subprocess, capture output, push to queue.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-
+	fmt.Println("start a goroutine!!!!!!!!")
 	cmd := exec.CommandContext(ctx, "sh", "-c", command)
 	output, err := cmd.CombinedOutput()
 
@@ -91,7 +93,10 @@ func (b *BackgroundManager) Check(taskID string) string {
 			if task.Result != "" {
 				result = task.Result
 			}
-			return fmt.Sprintf("[%s] %s\n%s", task.Status, task.Command[:60], result)
+			if len(task.Command) > 60 {
+				task.Command = task.Command[:60]
+			}
+			return fmt.Sprintf("[%s] %s\n%s", task.Status, task.Command, result)
 		} else {
 			return fmt.Sprintf("Error: Unknown task %s", taskID)
 		}
