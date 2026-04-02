@@ -79,7 +79,7 @@ func (c *Agent) Chat() {
 		})
 		history = c.AgentLoop(history)
 		responses_content := history[len(history)-1].Content
-		fmt.Println(responses_content)
+		fmt.Println("\n" + responses_content)
 		i++
 	}
 }
@@ -97,15 +97,24 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 			Messages: messages,
 			Tools:    c.tools,
 		}
-		var fullContent strings.Builder
-		var thinkingContent strings.Builder
+
 		var assistantMsg api.Message
 		use_todo := false
 		manual_compact := false
-
+		first_thinking := 0
 		err := c.client.Chat(c.ctx, req, func(resp api.ChatResponse) error {
-			fullContent.WriteString(resp.Message.Content)
-			thinkingContent.WriteString(resp.Message.Thinking)
+			if resp.Message.Thinking != "" {
+
+				assistantMsg.Thinking += resp.Message.Thinking
+				if first_thinking == 0 {
+					fmt.Printf("\033[90m正在思考：\033[0m")
+				}
+				fmt.Printf("\033[90m%s\033[0m", resp.Message.Thinking)
+				first_thinking++
+			}
+			if resp.Message.Content != "" {
+				assistantMsg.Content += resp.Message.Content
+			}
 			if len(resp.Message.ToolCalls) > 0 {
 				assistantMsg.ToolCalls = append(assistantMsg.ToolCalls, resp.Message.ToolCalls...)
 			}
@@ -117,12 +126,8 @@ func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
 		}
 
 		assistantMsg.Role = "assistant"
-		assistantMsg.Thinking = thinkingContent.String()
-		assistantMsg.Content = fullContent.String()
 		messages = append(messages, assistantMsg)
-		if assistantMsg.Thinking != "" {
-			fmt.Printf("\033[90m正在思考：%s\033[0m\n", assistantMsg.Thinking)
-		}
+
 		if len(assistantMsg.ToolCalls) == 0 {
 			return messages
 		}

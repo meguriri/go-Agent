@@ -32,8 +32,8 @@ func main() {
 	agent := model.NewAgent(c, modelID, ctx,
 		// fmt.Sprintf("你是一名位于 %s 的编程agent。在处理不熟悉的主题之前，请使用 load_skill 这个工具来获取专业知识。可用技能：%s", dir, skillLoader.GetDescriptions()),
 		//fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用任务工具(工具名：task)来把任务委派给subagent。", dir),
-		fmt.Sprintf("You are a coding agent at %s. Use task tools to plan and track work. Please note that task tools are intended solely for planning and recording tasks; for the actual execution of a task, you must utilize other tools to the specific nature of the task—to carry it out to completion.", dir),
-		// fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用工具来解决问题", dir),
+		// fmt.Sprintf("You are a coding agent at %s. Use task tools to plan and track work. Please note that task tools are intended solely for planning and recording tasks; for the actual execution of a task, you must utilize other tools to the specific nature of the task—to carry it out to completion.", dir),
+		fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用工具来解决问题", dir),
 		tools.NewToolHandler(),
 	)
 	agent.Chat()
