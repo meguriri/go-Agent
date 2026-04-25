@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"s01/task"
+	"s01/internal/task"
 
 	"github.com/ollama/ollama/api"
 )

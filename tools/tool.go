@@ -1,48 +1,30 @@
 package tools
 
 import (
+	"context"
+
 	"github.com/ollama/ollama/api"
 )
 
-type tool interface {
+type Tool interface {
 	GetTool() api.Tool
 	Run(api.ToolCallFunctionArguments) string
 }
-
-type ToolHandler map[string]tool
-
-func NewToolHandler() ToolHandler {
-	t := make(ToolHandler)
-	t["bash"] = BashTool{}
-	t["read_file"] = ReadTool{}
-	t["write_file"] = WriteTool{}
-	t["edit_file"] = EditTool{}
-	t["background_run"] = BackgroundTool{}
-	t["check_background"] = CheckBackgroundTool{}
-	// t["todo"] = TodoManager{}
-	// t["task"] = TaskTool{}
-	// t["load_skill"] = LoadSkillTool{}
-	// t["compact"] = CompactTool{}
-	// t["task_create"] = TasksCreateTool{}
-	// t["task_update"] = TasksUpdateTool{}
-	// t["task_list"] = TasksListTool{}
-	// t["task_get"] = TasksGetTool{}
-	return t
+type Messenger interface {
+	Send(string, string, string, string, map[string]any) string
+}
+type InboxReader interface {
+	ReadInboxText(string) string
 }
 
-func NewSubToolHandler() ToolHandler {
-	t := make(ToolHandler)
-	t["bash"] = BashTool{}
-	t["read_file"] = ReadTool{}
-	t["write_file"] = WriteTool{}
-	t["edit_file"] = EditTool{}
-	// t["todo"] = TodoManager{}
-	// t["task"] = TaskTool{}
-	// t["load_skill"] = LoadSkillTool{}
-	// t["compact"] = CompactTool{}
-	return t
+type SubagentRunner interface {
+	RunSubagent(context.Context, string, string) string
 }
-
-func (t ToolHandler) AddTools(name string, tool tool) {
-	t[name] = tool
+type TeamManager interface {
+	Spawn(name string, role string, prompt string) string
+	ListAll() string
+	MemberNames() []string
+}
+type Broadcaster interface {
+	Broadcast(sender string, content string, teamMates []string) string
 }

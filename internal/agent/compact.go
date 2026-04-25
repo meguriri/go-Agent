@@ -1,4 +1,4 @@
-package model
+package agent
 
 import (
 	"encoding/json"
@@ -43,7 +43,7 @@ func MicroCompact(messages []api.Message) []api.Message {
 	return messages
 }
 
-func AutoCompact(c *Agent, messages []api.Message) []api.Message {
+func AutoCompact(agent Agent, messages []api.Message) []api.Message {
 	os.MkdirAll(TRANSCRIPT_DIR, 0755)
 	fileName := fmt.Sprintf("transcript_%d.jsonl", time.Now().Unix())
 	transcriptPath := filepath.Join(TRANSCRIPT_DIR, fileName)
@@ -62,9 +62,10 @@ func AutoCompact(c *Agent, messages []api.Message) []api.Message {
 	if len(conversationText) > 80000 {
 		conversationText = conversationText[:80000]
 	}
-
+	model := agent.Model()
+	client := agent.Client()
 	req := &api.ChatRequest{
-		Model: c.model,
+		Model: model,
 		Messages: []api.Message{{
 			Role:    "user",
 			Content: "Summarize this conversation for continuity. Include: 1) What was accomplished, 2) Current state, 3) Key decisions made. Be concise but preserve critical details.\n\n" + conversationText},
@@ -73,7 +74,7 @@ func AutoCompact(c *Agent, messages []api.Message) []api.Message {
 	var fullContent strings.Builder
 	var assistantMsg api.Message
 
-	err = c.client.Chat(c.ctx, req, func(resp api.ChatResponse) error {
+	err = client.Chat(agent.Ctx(), req, func(resp api.ChatResponse) error {
 		fullContent.WriteString(resp.Message.Content)
 		return nil
 	})

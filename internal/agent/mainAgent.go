@@ -1,13 +1,10 @@
-package model
+package agent
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"s01/background"
-	"s01/tools"
+	"s01/internal/toolManager"
 	"strings"
 
 	"github.com/ollama/ollama/api"
@@ -20,20 +17,21 @@ import (
 // 	KEEP_RECENT    = 3
 // )
 
-type Agent struct {
+type MainAgent struct {
 	client            *api.Client
 	model             string
 	ctx               context.Context
 	threshold         int
 	System            string
 	tools             api.Tools
-	ToolHandler       tools.ToolHandler
+	ToolHandler       toolManager.ToolHandler
 	rounds_since_todo int
+	inbox             Inbox
 }
 
-func NewAgent(client *api.Client, model string, ctx context.Context, threshold int, system string,
-	toolHandler tools.ToolHandler) *Agent {
-	c := &Agent{
+func NewMainAgent(client *api.Client, model string, ctx context.Context, threshold int, system string,
+	toolHandler toolManager.ToolHandler, inbox Inbox) *MainAgent {
+	c := &MainAgent{
 		client:            client,
 		model:             model,
 		ctx:               ctx,
@@ -42,6 +40,7 @@ func NewAgent(client *api.Client, model string, ctx context.Context, threshold i
 		tools:             nil,
 		ToolHandler:       toolHandler,
 		rounds_since_todo: 0,
+		inbox:             inbox,
 	}
 	for _, v := range c.ToolHandler {
 		c.tools = append(c.tools, v.GetTool())
@@ -49,7 +48,17 @@ func NewAgent(client *api.Client, model string, ctx context.Context, threshold i
 	return c
 }
 
-func (c *Agent) Chat() {
+func (c MainAgent) Model() string {
+	return c.model
+}
+func (c *MainAgent) Client() *api.Client {
+	return c.client
+}
+func (c *MainAgent) Ctx() context.Context {
+	return c.ctx
+}
+
+func (c *MainAgent) Chat() {
 	history := make([]api.Message, 0)
 	history = append(history, api.Message{
 		Role:    "system",
@@ -57,12 +66,13 @@ func (c *Agent) Chat() {
 	})
 	i := 1
 	for true {
-		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("\033[36ms01 >> \033[0m")
-		query, err := reader.ReadString('\n')
-		if err != nil {
-			return
-		}
+		// reader := bufio.NewReader(os.Stdin)
+		// query, err := reader.ReadString('\n')
+		// if err != nil {
+		// 	return
+		// }
+		var query string = "生成 Alice（程序员）和 Bob（测试员）。让 Alice 给 Bob 发送一条消息。"
 		// if i == 1 {
 		// 	query = "在后台运行 `sleep 5 && echo done`，然后在其运行期间创建一个文件。"
 		// } else if i == 2 {
@@ -88,31 +98,42 @@ func (c *Agent) Chat() {
 	}
 }
 
-func (c *Agent) AgentLoop(messages []api.Message) []api.Message {
+func (c *MainAgent) AgentLoop(messages []api.Message) []api.Message {
 	for true {
-		messages = MicroCompact(messages)
-		if EstimateTokens(messages) > c.threshold {
-			fmt.Println("[auto_compact triggered]")
-			messages = AutoCompact(c, messages)
-		}
+		// messages = MicroCompact(messages)
+		// if EstimateTokens(messages) > c.threshold {
+		// 	fmt.Println("[auto_compact triggered]")
+		// 	messages = AutoCompact(c, messages)
+		// }
 
-		notifs := background.MyBackgroundManager.DrainNotifications()
-		if notifs != nil && len(messages) != 0 {
-			lines := make([]string, 0)
-			for _, n := range notifs {
-				lines = append(lines, fmt.Sprintf("[bg:%s] %s: %s", n.ID, n.Status, n.Result))
-			}
-			notifText := strings.Join(lines, "\n")
+		// notifs := background.MyBackgroundManager.DrainNotifications()
+		// if notifs != nil && len(messages) != 0 {
+		// 	lines := make([]string, 0)
+		// 	for _, n := range notifs {
+		// 		lines = append(lines, fmt.Sprintf("[bg:%s] %s: %s", n.ID, n.Status, n.Result))
+		// 	}
+		// 	notifText := strings.Join(lines, "\n")
+		// 	messages = append(messages, api.Message{
+		// 		Role:    "user",
+		// 		Content: fmt.Sprintf("<background-results>\n%s\n</background-results>", notifText),
+		// 	})
+		// 	messages = append(messages, api.Message{
+		// 		Role:    "assistant",
+		// 		Content: "Noted background results.",
+		// 	})
+		// }
+
+		msg := c.inbox.ReadInboxText("lead")
+		if msg != "" && len(msg) != 0 {
 			messages = append(messages, api.Message{
 				Role:    "user",
-				Content: fmt.Sprintf("<background-results>\n%s\n</background-results>", notifText),
+				Content: fmt.Sprintf("<inbox>%s</inbox>", msg),
 			})
 			messages = append(messages, api.Message{
 				Role:    "assistant",
-				Content: "Noted background results.",
+				Content: "Noted inbox messages.",
 			})
 		}
-
 		req := &api.ChatRequest{
 			Model:    c.model,
 			Messages: messages,

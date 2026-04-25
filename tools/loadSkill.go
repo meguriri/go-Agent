@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"s01/skill"
+	"s01/internal/skill"
 
 	"github.com/ollama/ollama/api"
 )

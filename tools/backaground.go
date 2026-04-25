@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"s01/background"
+	"s01/internal/background"
 
 	"github.com/ollama/ollama/api"
 )

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"s01/background"
-	"s01/model"
-	"s01/task"
-	"s01/tools"
+	"s01/internal/agent"
+	"s01/internal/background"
+	"s01/internal/team"
+	"s01/internal/toolManager"
 
 	"github.com/joho/godotenv"
 	"github.com/ollama/ollama/api"
@@ -18,8 +18,10 @@ const (
 	THRESHOLD      = 50000
 	TRANSCRIPT_DIR = ".transcripts"
 	TASKS_DIR      = ".tasks"
+	TEAM_DIR       = ".team"
 	SKILL_DIR      = "./skills"
 	KEEP_RECENT    = 3
+	INBOX_DIR      = ".inbox"
 )
 
 func main() {
@@ -36,16 +38,29 @@ func main() {
 	}
 	ctx := context.Background()
 	dir, _ := os.Getwd()
+	bus := team.NewMessageBus(INBOX_DIR)
+	tm := team.NewTeammateManager(TEAM_DIR, bus)
+	subRunner := &agent.SubagentService{Client: c, Model: modelID}
+	deps := toolManager.Deps{
+		Messenger:      bus,
+		InboxReader:    bus,
+		SubagentRunner: subRunner,
+		TeamManager:    tm,
+		Broadcaster:    bus,
+	}
 	// skillLoader := skill.NewSkillLoader(SKILL_DIR)
-	task.MyTaskManager = task.NewTaskManager(TASKS_DIR)
+	// task.MyTaskManager = task.NewTaskManager(TASKS_DIR)
 	background.MyBackgroundManager = background.NewBackgroundManager()
-	agent := model.NewAgent(c, modelID, ctx, THRESHOLD,
+	toolHandler := toolManager.NewToolHandler(deps)
+	agent := agent.NewMainAgent(c, modelID, ctx, THRESHOLD,
 		// fmt.Sprintf("你是一名位于 %s 的编程agent。在处理不熟悉的主题之前，请使用 load_skill 这个工具来获取专业知识。可用技能：%s", dir, skillLoader.GetDescriptions()),
 		//fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用任务工具(工具名：task)来把任务委派给subagent。", dir),
 		// fmt.Sprintf("You are a coding agent at %s. Use task tools to plan and track work. Please note that task tools are intended solely for planning and recording tasks; for the actual execution of a task, you must utilize other tools to the specific nature of the task—to carry it out to completion.", dir),
 		// fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用工具来解决问题", dir),s
-		fmt.Sprintf("你是目录：%s 的一名编程agent。对长时间运行的命令使用 `background_run`。", dir+"/sandbox"),
-		tools.NewToolHandler(),
+		// fmt.Sprintf("你是目录：%s 的一名编程agent。对长时间运行的命令使用 `background_run`。", dir+"/sandbox"),
+		fmt.Sprintf("You are a team lead at %s. Spawn teammates and communicate via inboxes.", dir),
+		toolHandler,
+		bus,
 	)
 	agent.Chat()
 }
