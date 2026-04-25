@@ -84,9 +84,9 @@ func (c *TeamAgent) AgentLoop(messages []api.Message) []api.Message {
 
 				assistantMsg.Thinking += resp.Message.Thinking
 				if first_thinking == 0 {
-					fmt.Printf("\033[90m正在思考：\033[0m")
+					fmt.Printf("\033[35m%s:\033[0m\033[35m正在思考：\033[0m", c.name)
 				}
-				fmt.Printf("\033[90m%s\033[0m", resp.Message.Thinking)
+				fmt.Printf("\033[35m%s\033[0m", resp.Message.Thinking)
 				first_thinking++
 			}
 			if resp.Message.Content != "" {
@@ -109,7 +109,7 @@ func (c *TeamAgent) AgentLoop(messages []api.Message) []api.Message {
 			return messages
 		}
 		for _, tc := range assistantMsg.ToolCalls {
-			fmt.Printf("\033[33m$ 正在执行工具: %s\033[0m\n", tc.Function.Name)
+			fmt.Printf("\033[35m%s $ 正在执行工具: %s\033[0m\n", c.name, tc.Function.Name)
 			var output string
 			handler, ok := c.ToolHandler[tc.Function.Name]
 			if !ok {
@@ -118,7 +118,7 @@ func (c *TeamAgent) AgentLoop(messages []api.Message) []api.Message {
 				output = handler.Run(tc.Function.Arguments)
 			}
 			if tc.Function.Name != "todo" {
-				fmt.Printf("执行结果摘要: %s\n", strings.Split(output, "\n")[0])
+				fmt.Printf("\033[35m%s 执行结果：%s\033[0m\n", c.name, strings.Split(output, "\n")[0])
 			}
 			toolResultMsg := api.Message{
 				Role:      "tool",

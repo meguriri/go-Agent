@@ -13,6 +13,10 @@ type Agent interface {
 	Ctx() context.Context
 }
 
+type TeamManager interface {
+	ListAll() string
+}
+
 type Inbox interface {
 	ReadInboxText(string) string
 	ReadInboxMessages(string) []api.Message

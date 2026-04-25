@@ -19,9 +19,9 @@ const (
 	TRANSCRIPT_DIR = ".transcripts"
 	TASKS_DIR      = ".tasks"
 	TEAM_DIR       = ".team"
+	INBOX_DIR      = ".inbox"
 	SKILL_DIR      = "./skills"
 	KEEP_RECENT    = 3
-	INBOX_DIR      = ".inbox"
 )
 
 func main() {
@@ -58,9 +58,10 @@ func main() {
 		// fmt.Sprintf("You are a coding agent at %s. Use task tools to plan and track work. Please note that task tools are intended solely for planning and recording tasks; for the actual execution of a task, you must utilize other tools to the specific nature of the task—to carry it out to completion.", dir),
 		// fmt.Sprintf("你是目录：%s 的一名编程agent。你必须使用工具来解决问题", dir),s
 		// fmt.Sprintf("你是目录：%s 的一名编程agent。对长时间运行的命令使用 `background_run`。", dir+"/sandbox"),
-		fmt.Sprintf("You are a team lead at %s. Spawn teammates and communicate via inboxes.", dir),
+		fmt.Sprintf("你是位于 %s 的团队负责人,你的名字是lead。生成teammate，并通过inbox进行沟通。你可以用spawn_teammate创建teamagent，然后别忘了写prompt，让他们去完成一个任务。别忘了teammate通过inbox进行沟通", dir),
 		toolHandler,
 		bus,
+		tm,
 	)
 	agent.Chat()
 }

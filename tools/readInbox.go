@@ -10,16 +10,11 @@ type ReadInboxTool struct {
 
 func (r ReadInboxTool) GetTool() api.Tool {
 	props := api.NewToolPropertiesMap()
-	props.Set("sender", api.ToolProperty{
-		Type:        api.PropertyType{"string"},
-		Description: "which agent send this message",
-	})
 	readToolFunction := api.ToolFunction{
 		Name:        "read_inbox",
-		Description: "Read and drain your inbox.",
+		Description: "Read and drain the lead's inbox.",
 		Parameters: api.ToolFunctionParameters{
 			Type:       "object",
-			Required:   []string{"sender"},
 			Properties: props,
 		},
 	}
@@ -30,9 +25,7 @@ func (r ReadInboxTool) GetTool() api.Tool {
 }
 
 func (r ReadInboxTool) Run(args api.ToolCallFunctionArguments) string {
-	senderRaw, _ := args.Get("sender")
-	sender := senderRaw.(string)
-	message := r.Reader.ReadInboxText(sender)
+	message := r.Reader.ReadInboxText("lead")
 	return message
 
 }

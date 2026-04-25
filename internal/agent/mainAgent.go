@@ -1,9 +1,11 @@
 package agent
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"s01/internal/toolManager"
 	"strings"
 
@@ -27,10 +29,11 @@ type MainAgent struct {
 	ToolHandler       toolManager.ToolHandler
 	rounds_since_todo int
 	inbox             Inbox
+	teamManager       TeamManager
 }
 
 func NewMainAgent(client *api.Client, model string, ctx context.Context, threshold int, system string,
-	toolHandler toolManager.ToolHandler, inbox Inbox) *MainAgent {
+	toolHandler toolManager.ToolHandler, inbox Inbox, teamManager TeamManager) *MainAgent {
 	c := &MainAgent{
 		client:            client,
 		model:             model,
@@ -41,6 +44,7 @@ func NewMainAgent(client *api.Client, model string, ctx context.Context, thresho
 		ToolHandler:       toolHandler,
 		rounds_since_todo: 0,
 		inbox:             inbox,
+		teamManager:       teamManager,
 	}
 	for _, v := range c.ToolHandler {
 		c.tools = append(c.tools, v.GetTool())
@@ -67,25 +71,39 @@ func (c *MainAgent) Chat() {
 	i := 1
 	for true {
 		fmt.Print("\033[36ms01 >> \033[0m")
-		// reader := bufio.NewReader(os.Stdin)
-		// query, err := reader.ReadString('\n')
-		// if err != nil {
-		// 	return
-		// }
-		var query string = "生成 Alice（程序员）和 Bob（测试员）。让 Alice 给 Bob 发送一条消息。"
+		reader := bufio.NewReader(os.Stdin)
+		query, err := reader.ReadString('\n')
+		if err != nil {
+			return
+		}
+		// var query string
 		// if i == 1 {
-		// 	query = "在后台运行 `sleep 5 && echo done`，然后在其运行期间创建一个文件。"
+		// 	query = "生成 Alice（程序员）和 Bob（测试员）。让 Alice 给 Bob 发送一条消息。"
 		// } else if i == 2 {
-		// 	query = "启动 3 个后台任务：“sleep 2”、“sleep 4”、“sleep 6”。检查它们的状态。"
+		// 	query = "向所有队友广播：“状态更新：第一阶段已完成。”"
 		// } else if i == 3 {
-		// 	query = "在后台运行一个在sandbox目录下运行test.py,同时继续接受我的其他任务"
+		// 	query = "请查看lead收件箱，看是否有任何消息。"
+		// } else if i == 4 {
+		// 	query = "/team"
+		// } else if i == 5 {
+		// 	query = "/inbox"
 		// } else {
 		// 	query = "exit"
 		// }
-		// fmt.Printf("\033[36ms01 >>%s \033[0m\n", query)
+		fmt.Printf("\033[36ms01 >>%s \033[0m\n", query)
 		query = strings.ToLower(strings.Trim(query, " "))
 		if query == "q" || query == "exit" {
 			break
+		}
+		if query == "/team" {
+			fmt.Println(c.teamManager.ListAll())
+			i++
+			continue
+		}
+		if query == "/inbox" {
+			fmt.Println(c.inbox.ReadInboxText("lead"))
+			i++
+			continue
 		}
 		history = append(history, api.Message{
 			Role:    "user",

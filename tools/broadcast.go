@@ -18,7 +18,7 @@ func (b BroadcastTool) GetTool() api.Tool {
 
 	BroadcastToolFunction := api.ToolFunction{
 		Name:        "broadcast",
-		Description: "Spawn a persistent teammate that runs in its own thread.",
+		Description: "Send a message to all teammates.",
 		Parameters: api.ToolFunctionParameters{
 			Type:       "object",
 			Required:   []string{"content"},
